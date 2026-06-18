@@ -3,11 +3,11 @@ services:
     name: voice-biometrics
     env: node
     plan: free
-    branch: main
-    buildCommand: npm install
-    startCommand: node index.js
-
-disks:
-  - name: data
-    mountPath: /data
-    sizeGb: 1
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: RENDER_DISK_PATH
+        value: "."
