@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: voice-biometrics
+    env: node
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: node index.js
+
+disks:
+  - name: data
+    mountPath: /data
+    sizeGb: 1
