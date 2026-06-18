@@ -1,11 +1,17 @@
-const fs = require("fs");
 const path = require("path");
+const fs = require("fs");
 const Database = require("better-sqlite3");
 
-// Always use local folder on free tier
+// Always use local file on free tier
 const dbDir = ".";
 const dbPath = path.join(dbDir, "voice_profiles.db");
 
+// Ensure directory exists
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
+// Open database
 const db = new Database(dbPath);
 
 // Create tables
@@ -26,4 +32,5 @@ db.prepare(`create table if not exists verification_logs (
   match integer
 )`).run();
 
-module.exports = db;
+// Export both db and path
+module.exports = { db, dbPath };
