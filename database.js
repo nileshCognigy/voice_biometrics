@@ -2,13 +2,10 @@ const fs = require("fs");
 const path = require("path");
 const Database = require("better-sqlite3");
 
-// Use /data if env var is set, otherwise local folder
-const dbDir = process.env.RENDER_DISK_PATH || ".";
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
-}
-
+// Always use local folder on free tier
+const dbDir = ".";
 const dbPath = path.join(dbDir, "voice_profiles.db");
+
 const db = new Database(dbPath);
 
 // Create tables
