@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const db = require("./database");
 const fs = require("fs");
+const sqlite3 = require("sqlite3").verbose();
 
 const app = express();
 app.use(bodyParser.json());
@@ -105,6 +106,46 @@ app.get("/health", (req, res) => {
   const dbPath = db.dbPath || path.join(__dirname, "voice_profiles.db");
   const exists = fs.existsSync(dbPath);
   res.json({ dbPath, exists });
+});
+
+// Create DB file and tables at runtime (useful for testing mounts)
+app.post("/create-db", (req, res) => {
+  const dbPath = db.dbPath || path.join(__dirname, "voice_profiles.db");
+  const dir = path.dirname(dbPath);
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+  } catch (err) {
+    // ignore
+  }
+
+  const tempDb = new sqlite3.Database(dbPath, (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    tempDb.serialize(() => {
+      tempDb.run(`create table if not exists voice_profiles (
+        id integer primary key autoincrement,
+        customer_id text not null,
+        embedding text not null,
+        confidence_score real,
+        enrolled_at text default (datetime('now')),
+        updated_at text default (datetime('now'))
+      )`);
+
+      tempDb.run(`create table if not exists verification_logs (
+        id integer primary key autoincrement,
+        customer_id text,
+        attempted_at text default (datetime('now')),
+        confidence real,
+        match integer
+      )`);
+
+      tempDb.close((closeErr) => {
+        if (closeErr) return res.status(500).json({ error: closeErr.message });
+        const exists = fs.existsSync(dbPath);
+        res.json({ dbPath, created: true, exists });
+      });
+    });
+  });
 });
 
 // Catch-all error handler
