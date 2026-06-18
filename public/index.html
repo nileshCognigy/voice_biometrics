@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Voice Biometrics Demo</title>
+</head>
+<body>
+  <h1>Voice Biometrics</h1>
+
+  <h2>Enrol</h2>
+  <form id="enrolForm">
+    Customer ID: <input type="text" id="enrolCustomer"><br>
+    Embedding (comma separated): <input type="text" id="enrolEmbedding"><br>
+    <button type="submit">Enrol</button>
+  </form>
+
+  <h2>Verify</h2>
+  <form id="verifyForm">
+    Customer ID: <input type="text" id="verifyCustomer"><br>
+    Embedding (comma separated): <input type="text" id="verifyEmbedding"><br>
+    <button type="submit">Verify</button>
+  </form>
+
+  <pre id="output"></pre>
+
+  <script>
+    async function postData(url = "", data = {}) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      return response.json();
+    }
+
+    document.getElementById("enrolForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const customer_id = document.getElementById("enrolCustomer").value;
+      const embedding = document.getElementById("enrolEmbedding").value.split(",").map(Number);
+      const result = await postData("/enrol", { customer_id, embedding });
+      document.getElementById("output").textContent = JSON.stringify(result, null, 2);
+    });
+
+    document.getElementById("verifyForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const customer_id = document.getElementById("verifyCustomer").value;
+      const embedding = document.getElementById("verifyEmbedding").value.split(",").map(Number);
+      const result = await postData("/verify", { customer_id, embedding });
+      document.getElementById("output").textContent = JSON.stringify(result, null, 2);
+    });
+  </script>
+</body>
+</html>
