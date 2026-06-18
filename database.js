@@ -1,7 +1,14 @@
 const sqlite3 = require("sqlite3").verbose();
-const db = new sqlite3.Database("./voice_profiles.db");
+
+// Use Render Disk if available, otherwise local file
+const dbPath = process.env.RENDER_DISK_PATH
+  ? `${process.env.RENDER_DISK_PATH}/voice_profiles.db`
+  : "./voice_profiles.db";
+
+const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
+  // Profiles table
   db.run(`create table if not exists voice_profiles (
     id integer primary key autoincrement,
     customer_id text not null,
@@ -11,6 +18,7 @@ db.serialize(() => {
     updated_at text default (datetime('now'))
   )`);
 
+  // Logs table
   db.run(`create table if not exists verification_logs (
     id integer primary key autoincrement,
     customer_id text,
@@ -19,5 +27,8 @@ db.serialize(() => {
     match integer
   )`);
 });
+
+// attach path for runtime checks (e.g. health endpoints)
+db.dbPath = dbPath;
 
 module.exports = db;

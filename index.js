@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const db = require("./database");
+const fs = require("fs");
 
 const app = express();
 app.use(bodyParser.json());
@@ -97,6 +98,13 @@ app.get("/logs", (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
+});
+
+// Health endpoint: reports DB path and whether the DB file exists
+app.get("/health", (req, res) => {
+  const dbPath = db.dbPath || path.join(__dirname, "voice_profiles.db");
+  const exists = fs.existsSync(dbPath);
+  res.json({ dbPath, exists });
 });
 
 // Catch-all error handler
